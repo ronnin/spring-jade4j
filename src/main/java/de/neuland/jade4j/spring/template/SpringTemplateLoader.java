@@ -15,29 +15,29 @@ import org.springframework.web.context.support.ServletContextResourceLoader;
 
 public class SpringTemplateLoader implements TemplateLoader, ServletContextAware {
 
-        private ResourceLoader resourceLoader;
-        private String encoding = "UTF-8";
-        private String suffix = ".jade";
-        private String basePath = "";
-        private ServletContext context;
+    private ResourceLoader resourceLoader;
+    private String encoding = "UTF-8";
+    private String suffix = ".jade";
+    private String basePath = "";
+    private ServletContext context;
 
-        @PostConstruct
-        public void init() {
-            if(this.resourceLoader == null) {
-                this.resourceLoader = new ServletContextResourceLoader(context);
-            }
+    @PostConstruct
+    public void init() {
+        if(this.resourceLoader == null) {
+            this.resourceLoader = new ServletContextResourceLoader(context);
         }
+    }
 
-        @Override
-        public void setServletContext(ServletContext servletContext) {
-            this.context = servletContext;
-        }
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.context = servletContext;
+    }
 
-        public void setResourceLoader(ResourceLoader resourceLoader) {
-            this.resourceLoader = resourceLoader;
-        }
-        
-        @Override
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+    
+    @Override
 	public long getLastModified(String name) {
 		Resource resource = getResource(name);
 		try {
@@ -53,11 +53,22 @@ public class SpringTemplateLoader implements TemplateLoader, ServletContextAware
 		return new InputStreamReader(resource.getInputStream(), encoding);
 	}
 
+    /**
+     * !uri represent an URLResource
+     *  uri represent a ClassPathResource
+     * 
+     * if <b>name</b> ends with neither <i>.jade</i> nor <i>.html</i>, then append <i>.jade</i> automatically.
+     * 
+     * @param name  uri string of resource
+     * @return
+     */
 	private Resource getResource(String name) {
-		String resourceName = basePath + name;
-		if (!resourceName.endsWith(suffix)) {
-			resourceName += suffix;
-		}
+        String resourceName = (name != null && name.startsWith("!")) 
+                ? name.substring(1) : basePath + name;
+
+        if (!resourceName.endsWith(suffix) && !resourceName.endsWith(".html")) {
+            resourceName += suffix;
+        }
 		return this.resourceLoader.getResource(resourceName);
 	}
 
